@@ -6,6 +6,4 @@ export interface Song {
   audioUrl: string;
   trackNumber?: number;
   modifiedTime?: string;
-  isUploaded?: boolean;
-  isVisible?: boolean;
 }

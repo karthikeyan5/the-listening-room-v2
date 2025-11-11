@@ -28,7 +28,8 @@ const App: React.FC = () => {
     };
 
     const fetchAlbum = async () => {
-      const pathParts = window.location.pathname.split('/').filter(p => p);
+      // Use hash routing for compatibility with static hosts like GitHub Pages
+      const pathParts = window.location.hash.substring(1).split('/').filter(p => p);
       
       if (pathParts.length >= 2 && pathParts[0] === 'album' && process.env.GOOGLE_API_KEY) {
         const folderId = pathParts[1];
@@ -52,12 +53,18 @@ const App: React.FC = () => {
         if (!process.env.GOOGLE_API_KEY) {
           loadStaticAlbum('API Key not configured. Showing demo album.');
         } else {
-          loadStaticAlbum('Showing demo album. Use a URL like "/album/YOUR_FOLDER_ID" to load a live album.');
+          loadStaticAlbum('Showing demo album. Use a URL like "/#/album/YOUR_FOLDER_ID" to load a live album.');
         }
       }
     };
 
     fetchAlbum();
+
+    // Listen for hash changes to allow navigation without full page reloads
+    window.addEventListener('hashchange', fetchAlbum);
+    return () => {
+      window.removeEventListener('hashchange', fetchAlbum);
+    };
   }, []);
 
   const handleSelectSong = (song: Song) => {

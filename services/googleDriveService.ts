@@ -80,18 +80,3 @@ export const getAlbumDetails = async (folderId: string): Promise<{ albumTitle: s
 
     return { albumTitle, songs };
 };
-
-// FIX: Added signIn and signOut functions to resolve import errors in GoogleAuth.tsx
-export const signIn = () => {
-  // Placeholder for Google Sign-In logic. This would typically involve
-  // using the Google API Client Library (gapi) to initiate the OAuth flow.
-  alert('Google Sign-In is not fully implemented in this demo.');
-  console.log('signIn function called');
-};
-
-export const signOut = () => {
-  // Placeholder for Google Sign-Out logic. This would involve using
-  // gapi.auth2.getAuthInstance().signOut().
-  alert('Google Sign-Out is not fully implemented in this demo.');
-  console.log('signOut function called');
-};
