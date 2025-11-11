@@ -1,6 +1,8 @@
-import { Song } from '../types';
 
-const API_KEY = process.env.GOOGLE_API_KEY;
+import { Song } from '../types';
+import { ARTIST_NAME } from '../constants';
+
+const API_KEY = 'AIzaSyAM7mxWc27KvccZxJdCmCx7S7oMt6tfaVQ';
 const API_BASE_URL = 'https://www.googleapis.com/drive/v3';
 
 // Helper to construct download URLs
@@ -13,6 +15,7 @@ const getAlbumTitle = async (folderId: string): Promise<string> => {
     const params = new URLSearchParams({
         fields: 'name',
         key: API_KEY,
+        supportsAllDrives: 'true',
     });
     const url = `${API_BASE_URL}/files/${folderId}?${params.toString()}`;
 
@@ -37,8 +40,10 @@ export const getAlbumDetails = async (folderId: string): Promise<{ albumTitle: s
 
     const params = new URLSearchParams({
         q: `'${folderId}' in parents and trashed=false`,
-        fields: 'files(id,name,webContentLink,mimeType,modifiedTime,mediaMetadata)',
+        fields: 'files(id,name,mimeType,modifiedTime)',
         key: API_KEY,
+        includeItemsFromAllDrives: 'true',
+        supportsAllDrives: 'true',
     });
     const filesUrl = `${API_BASE_URL}/files?${params.toString()}`;
 
@@ -54,22 +59,34 @@ export const getAlbumDetails = async (folderId: string): Promise<{ albumTitle: s
     const audioFiles = files.filter((f: any) => f.mimeType && f.mimeType.startsWith('audio/'));
     const imageFiles = files.filter((f: any) => f.mimeType && f.mimeType.startsWith('image/'));
 
-    const albumArtFile = imageFiles.find((f: any) => f.name.toLowerCase() === 'album_art.png');
+    // Find album art, preferring webp over png
+    const albumArtWebp = imageFiles.find((f: any) => f.name.toLowerCase() === 'album_art.webp');
+    const albumArtPng = imageFiles.find((f: any) => f.name.toLowerCase() === 'album_art.png');
+    const albumArtFile = albumArtWebp || albumArtPng;
+    
     const defaultCoverArtUrl = albumArtFile ? getFileUrl(albumArtFile.id) : `https://picsum.photos/seed/${encodeURIComponent(albumTitle)}/500/500`;
 
     let songs: Song[] = audioFiles.map((file: any): Song => {
         const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
-        const songArtFile = imageFiles.find((img: any) => img.name.startsWith(baseName) && img.name.toLowerCase() !== 'album_art.png');
+        const songArtFile = imageFiles.find((img: any) => img.name.startsWith(baseName) && !img.name.toLowerCase().startsWith('album_art.'));
         
-        const metadata = file.mediaMetadata || {};
+        let trackNumber: number | undefined;
+        let title = baseName;
+
+        // Try to parse track number and title from filename (e.g., "01 - Song Title")
+        const trackMatch = baseName.match(/^(\d+)\s*[-._]?\s*(.*)/);
+        if (trackMatch && trackMatch[2]) {
+            trackNumber = parseInt(trackMatch[1], 10);
+            title = trackMatch[2].trim();
+        }
 
         return {
             id: file.id,
-            title: metadata.title || baseName,
-            artist: metadata.artist || metadata.albumArtist || 'Unknown Artist',
+            title: title,
+            artist: ARTIST_NAME,
             audioUrl: getFileUrl(file.id),
             coverArtUrl: songArtFile ? getFileUrl(songArtFile.id) : defaultCoverArtUrl,
-            trackNumber: metadata.trackNumber ? parseInt(metadata.trackNumber, 10) : undefined,
+            trackNumber: trackNumber,
             modifiedTime: file.modifiedTime,
         };
     });

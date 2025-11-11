@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Song } from './types';
 import { getAlbumDetails } from './services/googleDriveService';
@@ -5,7 +6,7 @@ import Header from './components/Header';
 import SongList from './components/SongList';
 import SongPlayer from './components/SongPlayer';
 import AboutArtist from './components/AboutArtist';
-import { ARTIST_NAME, ARTIST_INSTAGRAM_URL, UNRELEASED_SONGS } from './constants';
+import { ARTIST_NAME, ARTIST_INSTAGRAM_URL } from './constants';
 
 const App: React.FC = () => {
   const [albumTitle, setAlbumTitle] = useState('');
@@ -17,53 +18,53 @@ const App: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
 
   useEffect(() => {
-    const loadStaticAlbum = (message: string) => {
-      setAlbumTitle("Demo Album");
-      setSongs(UNRELEASED_SONGS);
-      if (UNRELEASED_SONGS.length > 0) {
-        setSelectedSong(UNRELEASED_SONGS[0]);
-      }
-      setError(message);
-      setIsLoading(false);
+    const DEFAULT_FOLDER_ID = '1EFzdFEM0_sTnQ0r3-D3mtfp_o7FhQsqQ'; // Default folder
+
+    const getFolderIdFromUrl = (): string => {
+        const hash = window.location.hash;
+        const match = hash.match(/^#\/album\/(.+)$/);
+        return match ? match[1] : DEFAULT_FOLDER_ID;
     };
 
     const fetchAlbum = async () => {
-      // Use hash routing for compatibility with static hosts like GitHub Pages
-      const pathParts = window.location.hash.substring(1).split('/').filter(p => p);
+      const folderId = getFolderIdFromUrl();
       
-      if (pathParts.length >= 2 && pathParts[0] === 'album' && process.env.GOOGLE_API_KEY) {
-        const folderId = pathParts[1];
-        try {
-          setIsLoading(true);
-          setError(null);
-          const { albumTitle: title, songs: albumSongs } = await getAlbumDetails(folderId);
-          setAlbumTitle(title);
-          setSongs(albumSongs);
-          if (albumSongs.length > 0) {
-            setSelectedSong(albumSongs[0]);
-          }
-        } catch (err: any) {
-          console.error(err);
-          setError('Failed to load album. Please check the link and ensure the folder is public.');
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        // Handle fallback to static data
-        if (!process.env.GOOGLE_API_KEY) {
-          loadStaticAlbum('API Key not configured. Showing demo album.');
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Reset state for new album load
+        setAlbumTitle('');
+        setSongs([]);
+        setSelectedSong(null);
+        setIsPlaying(false);
+        
+        const { albumTitle: title, songs: albumSongs } = await getAlbumDetails(folderId);
+        setAlbumTitle(title);
+        setSongs(albumSongs);
+        if (albumSongs.length > 0) {
+          setSelectedSong(albumSongs[0]);
         } else {
-          loadStaticAlbum('Showing demo album. Use a URL like "/#/album/YOUR_FOLDER_ID" to load a live album.');
+            setError(`Album found, but it contains no audio files.`);
         }
+      } catch (err: any) {
+        console.error(err);
+        setError(`Failed to load album. Please check the Folder ID, API Key, and ensure the folder is public.`);
+        setAlbumTitle('');
+        setSongs([]);
+        setSelectedSong(null);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAlbum();
 
-    // Listen for hash changes to allow navigation without full page reloads
+    // Listen for hash changes to load new albums
     window.addEventListener('hashchange', fetchAlbum);
+
+    // Cleanup listener on component unmount
     return () => {
-      window.removeEventListener('hashchange', fetchAlbum);
+        window.removeEventListener('hashchange', fetchAlbum);
     };
   }, []);
 
@@ -90,8 +91,8 @@ const App: React.FC = () => {
 
   const getPlaceholderText = () => {
     if (isLoading) return 'Loading album...';
-    if (songs.length === 0 && !error) return 'This album is empty.';
-    if (error && songs.length === 0) return error; // Show fetch error if album is empty
+    if (error) return 'There was a problem loading the album.';
+    if (songs.length === 0) return 'This album is empty.';
     return 'Select a song to play.';
   };
 

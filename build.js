@@ -20,10 +20,6 @@ esbuild.build({
   entryPoints: ['index.tsx'],
   bundle: true,
   outfile: path.join(outDir, 'bundle.js'),
-  define: {
-    // Inject the environment variable from GitHub Secrets
-    'process.env.GOOGLE_API_KEY': JSON.stringify(process.env.GOOGLE_API_KEY)
-  },
   loader: { '.tsx': 'tsx', '.ts': 'ts' },
   jsx: 'automatic',
 }).catch(() => process.exit(1));
