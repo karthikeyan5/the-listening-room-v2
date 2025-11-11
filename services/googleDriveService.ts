@@ -37,7 +37,7 @@ export const getAlbumDetails = async (folderId: string): Promise<{ albumTitle: s
 
     const params = new URLSearchParams({
         q: `'${folderId}' in parents and trashed=false`,
-        fields: 'files(id,name,webContentLink,mimeType,modifiedTime,mediaMetadata(title,artist,albumArtist,trackNumber))',
+        fields: 'files(id,name,webContentLink,mimeType,modifiedTime,mediaMetadata)',
         key: API_KEY,
     });
     const filesUrl = `${API_BASE_URL}/files?${params.toString()}`;
