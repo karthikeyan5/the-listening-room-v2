@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import LockIcon from './icons/LockIcon';
 
@@ -6,7 +5,7 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAuthenticate: (password: string) => boolean;
-  authAction: 'add' | 'manage' | 'viewFeedback' | 'viewAnalytics' | null;
+  authAction: 'add' | 'manage' | null;
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate, authAction }) => {
@@ -58,10 +57,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onAuthenticate, 
         return 'add a new track';
       case 'manage':
         return 'manage existing songs';
-      case 'viewFeedback':
-        return 'view the feedback report';
-      case 'viewAnalytics':
-        return 'view the analytics dashboard';
       default:
         return 'proceed';
     }

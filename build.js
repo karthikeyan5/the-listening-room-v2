@@ -11,7 +11,7 @@ if (!fs.existsSync(outDir)) {
 
 // Copy index.html to the output directory and update script path
 let htmlContent = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf-8');
-htmlContent = htmlContent.replace('/index.tsx', '/bundle.js');
+htmlContent = htmlContent.replace('src="index.tsx"', 'src="bundle.js"');
 fs.writeFileSync(path.join(outDir, 'index.html'), htmlContent);
 
 

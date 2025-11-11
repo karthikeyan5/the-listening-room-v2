@@ -100,14 +100,16 @@ const App: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           <div className="lg:col-span-3">
             {selectedSong ? (
-              <SongPlayer
-                song={selectedSong}
-                isPlaying={isPlaying}
-                onPlayPause={() => setIsPlaying(!isPlaying)}
-                onNextSong={handleNextSong}
-                onPreviousSong={handlePreviousSong}
-                songCount={songs.length}
-              />
+              <>
+                <SongPlayer
+                  song={selectedSong}
+                  isPlaying={isPlaying}
+                  onPlayPause={() => setIsPlaying(!isPlaying)}
+                  onNextSong={handleNextSong}
+                  onPreviousSong={handlePreviousSong}
+                  songCount={songs.length}
+                />
+              </>
             ) : (
               <div className="flex items-center justify-center h-96 bg-slate-800/50 rounded-lg p-8 text-center">
                 <p className="text-gray-400 text-lg">
@@ -117,15 +119,17 @@ const App: React.FC = () => {
             )}
           </div>
           <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <h2 className="text-2xl font-bold text-white mb-4">Tracks</h2>
-              <SongList
-                songs={songs}
-                onSelectSong={handleSelectSong}
-                selectedSongId={selectedSong?.id}
-                isLoading={isLoading}
-              />
-              <div className="mt-8">
+            <div className="sticky top-24 flex flex-col h-[calc(100vh-7rem)]">
+              <h2 className="text-2xl font-bold text-white mb-4 flex-shrink-0">Tracks</h2>
+              <div className="flex-grow overflow-y-auto pr-2">
+                <SongList
+                  songs={songs}
+                  onSelectSong={handleSelectSong}
+                  selectedSongId={selectedSong?.id}
+                  isLoading={isLoading}
+                />
+              </div>
+              <div className="mt-8 flex-shrink-0">
                 <AboutArtist name={ARTIST_NAME} instagramUrl={ARTIST_INSTAGRAM_URL} />
               </div>
             </div>
