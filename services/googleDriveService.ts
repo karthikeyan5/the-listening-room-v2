@@ -9,7 +9,13 @@ const getFileUrl = (fileId: string) => `${API_BASE_URL}/files/${fileId}?alt=medi
 // Fetches the name of the folder (album title)
 const getAlbumTitle = async (folderId: string): Promise<string> => {
     if (!API_KEY) throw new Error("Google API Key is not configured.");
-    const url = `${API_BASE_URL}/files/${folderId}?fields=name&key=${API_KEY}`;
+    
+    const params = new URLSearchParams({
+        fields: 'name',
+        key: API_KEY,
+    });
+    const url = `${API_BASE_URL}/files/${folderId}?${params.toString()}`;
+
     const response = await fetch(url);
     if (!response.ok) {
         const errorData = await response.json();
@@ -29,7 +35,13 @@ export const getAlbumDetails = async (folderId: string): Promise<{ albumTitle: s
 
     const albumTitle = await getAlbumTitle(folderId);
 
-    const filesUrl = `${API_BASE_URL}/files?q='${folderId}'+in+parents and trashed=false&fields=files(id,name,webContentLink,mimeType,modifiedTime,mediaMetadata(title,artist,albumArtist,trackNumber))&key=${API_KEY}`;
+    const params = new URLSearchParams({
+        q: `'${folderId}' in parents and trashed=false`,
+        fields: 'files(id,name,webContentLink,mimeType,modifiedTime,mediaMetadata(title,artist,albumArtist,trackNumber))',
+        key: API_KEY,
+    });
+    const filesUrl = `${API_BASE_URL}/files?${params.toString()}`;
+
     const response = await fetch(filesUrl);
     if (!response.ok) {
         const errorData = await response.json();
